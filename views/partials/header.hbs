@@ -52,24 +52,9 @@
                     <li>
                         <a href="/">Home</a>
                     </li>
-                    {{#if loggedin}}
                     <li>
-                        <a href="#" style="color: aqua">Welcome, {{username}}!</a>
+                        <a href="/fetch_rt">Sign in With Twitter!</a>
                     </li>
-                    <li>
-                        <a href="/user/polls">My Polls</a>
-                    </li>
-                    <li>
-                        <a href="/logout">Logout</a>
-                    </li>
-                    {{^}}
-                    <li>
-                        <a href="/signup">Sign Up</a>
-                    </li>
-                    <li>
-                        <a href="/login">Log in</a>
-                    </li>
-                    {{/if}}
                 </ul>
             </div>
             <!-- /.navbar-collapse -->

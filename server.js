@@ -6,10 +6,12 @@ const bodyParser = require('body-parser');
 const axios = require('axios');
 // const Twit = require('twit')
 var Twitter = require("node-twitter-api");
+const _ = require('lodash');
 
 const { ObjectID } = require('mongodb');
 const { isLoggedin } = require('./server/middleware/isLoggedin');
 const { Venue } = require('./server/db/models/poll');
+const { appUser } = require('./server/db/models/appUser')
 
 var app = express();
 require('dotenv').load();
@@ -55,20 +57,32 @@ var _requestSecret;
 app.get('/', (req, res) => {
     axios.get('https://api.yelp.com/v3/businesses/search?location=washington')
         .then((response) => {
+            var venues = [];
+            response.data.businesses.forEach((venue) => {
+                venues.push(_.pick(venue, ['image_url', 'name', 'rating', 'location.address1', 'location.city', 'location.zip_code', 'location.country', 'display_phone', 'id']));
+            });
+
+            if (req.session.user) {
+                return axios.get(`https://api.twitter.com/1.1/followers/ids.json?cursor=-1&user_id=${req.session.user.id}`)
+            }
+
             res.render('home', {
                 title: "Home",
-                venue: response.data.businesses
+                venue: venues
             })
         })
-        .catch((e) => console.log(e))
 
-    console.log("outside");
+    .then((response) => {
+        console.log(response);
+        res.send(response);
+    })
+
+    .catch((e) => console.log(e));
+
     if (req.query.id && req.session.user) {
 
         var venueID = req.query.id,
             userID = req.session.user.id;
-
-        console.log(venueID, userID);
 
         Venue.findOne({
                 venue_id: venueID
@@ -92,10 +106,13 @@ app.get('/', (req, res) => {
 
 
         .then((venue) => {
-            console.log(venue);
+            res.redirect('/');
         })
 
-        .catch((e) => { console.log(e) });
+        .catch((e) => {
+            console.log(e);
+            res.redirect('/');
+        });
     }
 
 });

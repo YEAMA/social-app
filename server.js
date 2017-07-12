@@ -5,7 +5,7 @@ const hbs = require('hbs');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 // const Twit = require('twit')
-const Twitter = require("node-twitter-api");
+var Twitter = require("node-twitter-api");
 
 const { ObjectID } = require('mongodb');
 
@@ -43,10 +43,10 @@ app.use(session({
 axios.defaults.headers.common['Authorization'] = 'Bearer CKJIm1aKHYxpJLfIxo8TrXwOLyM2hvdiqzvDqqethjoAB-R17AqFO3CrHnmIGvzup864GershFcC2UMQ65ylLkXv1ke4dR_Nh34m87DWba46tTFXfWKxOzwG6kREWXYx';
 
 var twitter = new Twitter({
-    consumer_key: process.env.CONSUMER_KEY,
-    consumer_secret: process.env.CONSUMER_SECRET,
+    consumerKey: process.env.CONSUMER_KEY,
+    consumerSecret: process.env.CONSUMER_SECRET,
     callback: process.env.CALLBACK_URL
-})
+});
 
 var _requestSecret;
 
@@ -62,26 +62,10 @@ app.get('/', (req, res) => {
 })
 
 app.get('/fetch_rt', (req, res) => {
-    // T.get('search/tweets', { q: 'banana since:2011-07-11', count: 100 }, function(err, data, response) {
-    //     res.send(data)
-    // })
 
-    // Change screen name to be a variable carrying the name of the loggedin user
-    // T.get('followers/ids', { screen_name: 'YEWDeveloper' }, function(err, data, response) {
-    //     res.send(data)
-    // })
-
-    // T.get('account/verify_credentials', { skip_status: true })
-    //     .catch(function(err) {
-    //         console.log('caught error', err.stack)
-    //     })
-    //     .then(function(result) {
-    //         res.send(result); // Sends logged in user data
-    //     })
-
-    twitter.getRequestToken(function(err, requestToken, requestSecret) {
+    twitter.getRequestToken(function(err, requestToken, requestSecret, results) {
         if (err)
-            res.status(500).send(err);
+            res.send(err);
         else {
             _requestSecret = requestSecret;
             res.redirect("https://api.twitter.com/oauth/authenticate?oauth_token=" + requestToken);
@@ -96,11 +80,11 @@ app.get('/fetched_rt', (req, res) => {
 
     twitter.getAccessToken(requestToken, _requestSecret, verifier, function(err, accessToken, accessSecret) {
         if (err)
-            res.status(500).send(err);
+            res.send(err);
         else
             twitter.verifyCredentials(accessToken, accessSecret, function(err, user) {
                 if (err)
-                    res.status(500).send(err);
+                    res.send(err);
                 else
                     res.send(user);
             });

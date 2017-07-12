@@ -75,6 +75,7 @@ app.get('/', (req, res) => {
                     req.session.user.AT,
                     req.session.user.AS,
                     function(err, data, response) {
+                        console.log(err, data, response);
                         return Promise.resolve(data);
                     });
             }

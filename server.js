@@ -8,8 +8,8 @@ const axios = require('axios');
 var Twitter = require("node-twitter-api");
 
 const { ObjectID } = require('mongodb');
-const { isLoggedin } = require('/server/middleware/isLoggedin');
-const { Venue } = require('/server/db/models/poll');
+const { isLoggedin } = require('./server/middleware/isLoggedin');
+const { Venue } = require('./server/db/models/poll');
 
 var app = express();
 require('dotenv').load();

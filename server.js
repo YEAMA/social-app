@@ -73,8 +73,10 @@ app.get('/', (req, res) => {
                         user_id: req.session.user.id
                     },
                     req.session.user.AT,
-                    req.session.user.AS
-                );
+                    req.session.user.AS,
+                    function(err, data, response) {
+                        return Promise.resolve(data);
+                    });
             }
 
         })

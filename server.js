@@ -68,15 +68,16 @@ app.get('/', (req, res) => {
             })
 
             if (req.session.user) {
-                return axios.get(`https://api.twitter.com/1.1/followers/ids.json?cursor=-1&user_id=${req.session.user.id}`)
+                // return axios.get(`https://api.twitter.com/1.1/followers/ids.json?cursor=-1&user_id=${req.session.user.id}`)
+                console.log(req.session.user);
             }
 
         })
 
-    .then((response) => {
-        console.log(response);
-        // res.send(response);
-    })
+    // .then((response) => {
+    //     // console.log(response);
+    //     // res.send(response);
+    // })
 
     .catch((e) => console.log(e));
 

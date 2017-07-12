@@ -7,10 +7,8 @@ var VenueSchema = new mongoose.Schema({
         trim: true
     },
     going_ids: [{
-        id: {
-            type: Number,
-            required: true
-        }
+        type: Number,
+        required: true
     }]
 });
 

@@ -62,19 +62,20 @@ app.get('/', (req, res) => {
                 venues.push(_.pick(venue, ['image_url', 'name', 'rating', 'location.address1', 'location.city', 'location.zip_code', 'location.country', 'display_phone', 'id']));
             });
 
-            if (req.session.user) {
-                return axios.get(`https://api.twitter.com/1.1/followers/ids.json?cursor=-1&user_id=${req.session.user.id}`)
-            }
-
             res.render('home', {
                 title: "Home",
                 venue: venues
             })
+
+            if (req.session.user) {
+                return axios.get(`https://api.twitter.com/1.1/followers/ids.json?cursor=-1&user_id=${req.session.user.id}`)
+            }
+
         })
 
     .then((response) => {
         console.log(response);
-        res.send(response);
+        // res.send(response);
     })
 
     .catch((e) => console.log(e));

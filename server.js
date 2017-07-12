@@ -68,16 +68,21 @@ app.get('/', (req, res) => {
             })
 
             if (req.session.user) {
-                // return axios.get(`https://api.twitter.com/1.1/followers/ids.json?cursor=-1&user_id=${req.session.user.id}`)
-                console.log(req.session.user);
+                return twitter.friends("ids", {
+                        cursor: -1,
+                        user_id: req.session.user.id
+                    },
+                    req.session.user.AT,
+                    req.session.user.AS
+                );
             }
 
         })
 
-    // .then((response) => {
-    //     // console.log(response);
-    //     // res.send(response);
-    // })
+    .then((response) => {
+        console.log(response);
+        // res.send(response);
+    })
 
     .catch((e) => console.log(e));
 
@@ -145,6 +150,8 @@ app.get('/fetched_rt', (req, res) => {
                     res.send(err);
                 else {
                     req.session.user = user;
+                    req.session.user.AT = accessToken;
+                    req.session.user.AS = accessSecret;
                     res.redirect('/');
                 }
             });

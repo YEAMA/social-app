@@ -83,7 +83,7 @@ app.get('/', (req, res) => {
 
                 var venue = new Venue({
                     venue_id: venueID,
-                    going_ids: [userID]
+                    going_ids: userID
                 });
                 return venue.save();
             })
@@ -92,6 +92,8 @@ app.get('/', (req, res) => {
         .then((venue) => {
             console.log(venue);
         })
+
+        .catch((e) => { console.log(e) });
     }
 
 });

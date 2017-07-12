@@ -1,32 +1,20 @@
 const mongoose = require('mongoose')
 
-var PollSchema = new mongoose.Schema({
-    poll_title: {
+var VenueSchema = new mongoose.Schema({
+    venue_id: {
         type: String,
         required: true,
-        minlength: 10,
         trim: true
     },
-    options: [{
-        value: {
+    going_ids: [{
+        id: {
             type: String,
             required: true
-        },
-        votes: {
-            type: Number,
-            default: 0
         }
-    }],
-    _creator: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true
-    },
-    voters: [{
-        ip: String
     }]
 });
 
-PollSchema.methods.checkUserIP = function(ip) {
+VenueSchema.methods.checkUserIP = function(ip) {
     var poll = this;
 
     for (var i = 0; i < poll.voters.length; i++) {
@@ -37,6 +25,6 @@ PollSchema.methods.checkUserIP = function(ip) {
     return Promise.resolve({ poll, err: false });
 }
 
-var Poll = mongoose.model('Poll', PollSchema)
+var Venue = mongoose.model('venue', VenueSchema)
 
-module.exports = { Poll }
+module.exports = { Venue }

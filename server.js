@@ -8,6 +8,8 @@ const axios = require('axios');
 var Twitter = require("node-twitter-api");
 
 const { ObjectID } = require('mongodb');
+const { isLoggedin } = require('/server/middleware/isLoggedin');
+const { Venue } = require('/server/db/models/poll');
 
 var app = express();
 require('dotenv').load();
@@ -59,7 +61,38 @@ app.get('/', (req, res) => {
             })
         })
         .catch((e) => console.log(e))
-})
+
+    if (req.body.id) {
+        var venueID = req.body.id,
+            userID = req.session.user.id;
+
+        Venue.findOne({
+                venue_id: venueID
+            })
+            .then((venue) => {
+                if (venue)
+                    return Venue.findOneAndUpdate({
+                        venue_id: venueID
+                    }, {
+                        $addToSet: {
+                            going_ids: [userID]
+                        }
+                    }, { new: true });
+
+                var venue = new Venue({
+                    venue_id: venueID,
+                    going_ids: [userID]
+                });
+                return venue.save();
+            })
+
+
+        .then((venue) => {
+            console.log(venue);
+        })
+    }
+
+});
 
 app.get('/fetch_rt', (req, res) => {
 
@@ -85,8 +118,10 @@ app.get('/fetched_rt', (req, res) => {
             twitter.verifyCredentials(accessToken, accessSecret, function(err, user) {
                 if (err)
                     res.send(err);
-                else
-                    res.send(user);
+                else {
+                    req.session.user = user;
+                    res.redirect('/');
+                }
             });
     });
 });

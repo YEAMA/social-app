@@ -62,11 +62,13 @@ app.get('/', (req, res) => {
         })
         .catch((e) => console.log(e))
 
-    console.log(req.query);
-
+    console.log("outside");
     if (req.query.id && req.session.user) {
+
         var venueID = req.query.id,
             userID = req.session.user.id;
+
+        console.log(venueID, userID);
 
         Venue.findOne({
                 venue_id: venueID
@@ -83,7 +85,7 @@ app.get('/', (req, res) => {
 
                 var venue = new Venue({
                     venue_id: venueID,
-                    going_ids: userID
+                    going_ids: [userID]
                 });
                 return venue.save();
             })

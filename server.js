@@ -62,8 +62,10 @@ app.get('/', (req, res) => {
         })
         .catch((e) => console.log(e))
 
-    if (req.body.id) {
-        var venueID = req.body.id,
+    console.log(req.query);
+
+    if (req.query.id && req.session.user) {
+        var venueID = req.query.id,
             userID = req.session.user.id;
 
         Venue.findOne({

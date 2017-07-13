@@ -84,7 +84,9 @@ app.get('/', (req, res) => {
         })
 
     .then((venues) => {
+        console.log(req.session);
         if (venues) {
+            console.log(req.session);
 
             req.session.venues.forEach((venue) => {
                 venues.forEach((dbVenue) => {

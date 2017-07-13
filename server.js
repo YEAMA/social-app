@@ -66,7 +66,7 @@ app.get('/', (req, res) => {
             console.log("Entered 0")
             if (req.session.user) {
                 console.log("Entered 1")
-                return twitter.friends("ids", {
+                twitter.friends("ids", {
                         cursor: -1,
                         user_id: req.session.user.id
                     },
@@ -79,8 +79,10 @@ app.get('/', (req, res) => {
                         var ids = data.ids;
                         req.session.ids = ids;
 
-                        return Venue.find();
+
                     });
+
+                return Venue.find();
             }
 
         })

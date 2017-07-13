@@ -84,7 +84,6 @@ app.get('/', (req, res) => {
         })
 
     .then((venues) => {
-        console.log(1, req.session);
         if (venues) {
 
             req.session.venues.forEach((venue, index, array) => {
@@ -108,6 +107,9 @@ app.get('/', (req, res) => {
 
                     });
                 });
+
+                console.log(venue.nOfGoing);
+                console.log(venue.isUserGoing);
             });
 
         } // END if(venues)

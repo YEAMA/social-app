@@ -90,6 +90,7 @@ app.get('/', (req, res) => {
     .then((venues) => {
         if (venues) {
             console.log("Entered 2")
+            console.log(req.session)
 
             req.session.venues.forEach((venue, index, array) => {
                 venues.forEach((dbVenue) => {

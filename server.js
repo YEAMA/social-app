@@ -76,14 +76,8 @@ app.get('/', (req, res) => {
 
                         var ids = data.ids;
                         req.session.ids = ids;
-                        // Do something with the ids
-
-                        // Run venues over ids to generate number of people going
-                        // and to customize the going button
 
                         return Venue.find();
-
-                        // FINALLY, RENDER THE VIEW
                     });
             }
 
@@ -160,6 +154,8 @@ app.get('/', (req, res) => {
     var user = false;
     if (req.session.user)
         user = req.session.user.screen_name;
+
+    console.log(req.session);
 
     res.render('home', {
         title: "Home",

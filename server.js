@@ -84,7 +84,7 @@ app.get('/', (req, res) => {
 
     .then((response) => {
         console.log(response);
-        res.send(response);
+        // res.send(response);
     })
 
     .catch((e) => console.log(e));

@@ -62,10 +62,10 @@ app.get('/', (req, res) => {
                 venues.push(_.pick(venue, ['image_url', 'name', 'rating', 'location.address1', 'location.city', 'location.zip_code', 'location.country', 'display_phone', 'id']));
             });
 
-            res.render('home', {
-                title: "Home",
-                venue: venues
-            })
+            // res.render('home', {
+            //     title: "Home",
+            //     venue: venues
+            // })
 
             if (req.session.user) {
                 return twitter.friends("ids", {
@@ -84,7 +84,7 @@ app.get('/', (req, res) => {
 
     .then((response) => {
         console.log(response);
-        // res.send(response);
+        res.send(response);
     })
 
     .catch((e) => console.log(e));

@@ -117,16 +117,6 @@ app.get('/', (req, res) => {
 
         } // END if(venues)
 
-        var user = false;
-        if (req.session.user)
-            user = req.session.user.screen_name;
-
-        res.render('home', {
-            title: "Home",
-            venue: req.session.venues,
-            user
-        });
-
     })
 
     .catch((e) => console.log(e));
@@ -166,6 +156,16 @@ app.get('/', (req, res) => {
             res.redirect('/');
         });
     }
+
+    var user = false;
+    if (req.session.user)
+        user = req.session.user.screen_name;
+
+    res.render('home', {
+        title: "Home",
+        venue: req.session.venues,
+        user
+    });
 
 });
 

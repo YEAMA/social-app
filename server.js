@@ -63,7 +63,9 @@ app.get('/', (req, res) => {
             });
             req.session.venues = venues;
 
+            console.log("Entered 0")
             if (req.session.user) {
+                console.log("Entered 1")
                 return twitter.friends("ids", {
                         cursor: -1,
                         user_id: req.session.user.id
@@ -85,6 +87,7 @@ app.get('/', (req, res) => {
 
     .then((venues) => {
         if (venues) {
+            console.log("Entered 2")
 
             req.session.venues.forEach((venue, index, array) => {
                 venues.forEach((dbVenue) => {

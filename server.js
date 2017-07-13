@@ -84,9 +84,9 @@ app.get('/', (req, res) => {
         })
 
     .then((venues) => {
-        console.log(req.session);
+        console.log(1, req.session);
         if (venues) {
-            console.log(req.session);
+            console.log(2, req.session);
 
             req.session.venues.forEach((venue) => {
                 venues.forEach((dbVenue) => {
@@ -157,7 +157,7 @@ app.get('/', (req, res) => {
     if (req.session.user)
         user = req.session.user.screen_name;
 
-    console.log(req.session);
+    console.log(3, req.session);
 
     res.render('home', {
         title: "Home",

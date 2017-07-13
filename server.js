@@ -75,8 +75,8 @@ app.get('/', (req, res) => {
                     req.session.user.AT,
                     req.session.user.AS,
                     function(err, data, response) {
-                        console.log(err, data, response);
-                        return Promise.resolve(data);
+                        // TRY return data;
+                        return data.ids;
                     });
             }
 
@@ -84,7 +84,7 @@ app.get('/', (req, res) => {
 
     .then((response) => {
         console.log(response);
-        // res.send(response);
+        res.send(response);
     })
 
     .catch((e) => console.log(e));

@@ -87,24 +87,24 @@ app.get('/', (req, res) => {
         console.log(1, req.session);
         if (venues) {
 
-            req.session.venues.forEach((venue) => {
+            req.session.venues.forEach((venue, index, array) => {
                 venues.forEach((dbVenue) => {
                     if (dbVenue.venue_id == venue.id)
-                        venue.going_ids = dbVenue.going_ids;
+                        array[index].going_ids = dbVenue.going_ids;
                 });
             });
 
-            req.session.venues.forEach((venue) => {
-                venue.nOfGoing = 0;
-                venue.isUserGoing = false;
+            req.session.venues.forEach((venue, index, array) => {
+                array[index].nOfGoing = 0;
+                array[index].isUserGoing = false;
 
                 req.session.ids.forEach((id) => {
                     venue.going_ids.forEach((going_id) => {
 
                         if (going_id == req.session.user.id)
-                            venue.isUserGoing = true;
+                            array[index].isUserGoing = true;
                         else if (going_id == id)
-                            venue.nOfGoing++;
+                            array[index].nOfGoing++;
 
                     });
                 });
@@ -140,7 +140,7 @@ app.get('/', (req, res) => {
                         venue_id: venueID
                     }, {
                         $addToSet: {
-                            going_ids: [userID]
+                            going_ids: userID
                         }
                     }, { new: true });
 

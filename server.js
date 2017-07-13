@@ -86,7 +86,6 @@ app.get('/', (req, res) => {
     .then((venues) => {
         console.log(1, req.session);
         if (venues) {
-            console.log(2, req.session);
 
             req.session.venues.forEach((venue) => {
                 venues.forEach((dbVenue) => {
@@ -112,6 +111,16 @@ app.get('/', (req, res) => {
             });
 
         } // END if(venues)
+
+        var user = false;
+        if (req.session.user)
+            user = req.session.user.screen_name;
+
+        res.render('home', {
+            title: "Home",
+            venue: req.session.venues,
+            user
+        });
 
     })
 
@@ -144,6 +153,7 @@ app.get('/', (req, res) => {
 
 
         .then((venue) => {
+            console.log("here1 after success ######")
             res.redirect('/');
         })
 
@@ -152,18 +162,6 @@ app.get('/', (req, res) => {
             res.redirect('/');
         });
     }
-
-    var user = false;
-    if (req.session.user)
-        user = req.session.user.screen_name;
-
-    console.log(3, req.session);
-
-    res.render('home', {
-        title: "Home",
-        venue: req.session.venues,
-        user
-    });
 
 });
 

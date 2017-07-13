@@ -49,12 +49,16 @@
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav">
+                    {{#if user}}
                     <li>
-                        <a href="/">Home</a>
+                        <a href="#" style="color: aqua">Welcome, {{user}}!</a>
                     </li>
+                    {{^}}
                     <li>
                         <a href="/fetch_rt">Sign in With Twitter!</a>
                     </li>
+                    {{/if}}
+
                 </ul>
             </div>
             <!-- /.navbar-collapse -->

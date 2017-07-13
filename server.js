@@ -61,11 +61,7 @@ app.get('/', (req, res) => {
             response.data.businesses.forEach((venue) => {
                 venues.push(_.pick(venue, ['image_url', 'name', 'rating', 'location.address1', 'location.city', 'location.zip_code', 'location.country', 'display_phone', 'id']));
             });
-
-            // res.render('home', {
-            //     title: "Home",
-            //     venue: venues
-            // })
+            req.session.venues = venues;
 
             if (req.session.user) {
                 return twitter.friends("ids", {
@@ -75,17 +71,62 @@ app.get('/', (req, res) => {
                     req.session.user.AT,
                     req.session.user.AS,
                     function(err, data, response) {
-                        res.send({
-                            response: data.ids,
-                            test: "test"
-                        });
+                        if (err)
+                            return Promise.reject(err);
+
+                        var ids = data.ids;
+                        req.session.ids = ids;
+                        // Do something with the ids
+
+                        // Run venues over ids to generate number of people going
+                        // and to customize the going button
+
+                        return Venue.find();
+
+                        // FINALLY, RENDER THE VIEW
                     });
             }
 
         })
 
-    .then((response) => {
-        console.log(response);
+    .then((venues) => {
+        if (venues) {
+
+            req.session.venues.forEach((venue) => {
+                venues.forEach((dbVenue) => {
+                    if (dbVenue.venue_id == venue.id)
+                        venue.going_ids = dbVenue.going_ids;
+                });
+            });
+
+            req.session.venues.forEach((venue) => {
+                venue.nOfGoing = 0;
+                venue.isUserGoing = false;
+
+                req.session.ids.forEach((id) => {
+                    venue.going_ids.forEach((going_id) => {
+
+                        if (going_id == req.session.user.id)
+                            venue.isUserGoing = true;
+                        else if (going_id == id)
+                            venue.nOfGoing++;
+
+                    });
+                });
+            });
+
+        } // END if(venues)
+
+        var user = false;
+        if (req.session.user)
+            user = req.session.user.screen_name;
+
+        res.render('home', {
+            title: "Home",
+            venue: req.session.venues,
+            user
+        });
+
     })
 
     .catch((e) => console.log(e));

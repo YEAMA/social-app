@@ -3,17 +3,30 @@
 <div class="row">
   <div class="col-sm-6 col-md-12">
 
+    <div class="col-md-6 col-md-offset-3">
+      <form method="GET">
+        <input type="text" class="form-control" name="location" placeholder="Enter Your Location" value="{{user_location}}">
+        <br>
+        <button class="btn btn-success btn-block" role="submit">Submit</button>
+      </form>
+    </div>
+    <div class="row"></div>
+    <hr>
+
     {{#each venue}}
     <div class="thumbnail" style="display: inline-block; width: 30%">
       <img src="{{image_url}}" alt="{{name}}">
       <div class="caption">
         <h3>{{name}}</h3>
         <p>Rating {{rating}} <br> Address: {{location.address1}}, {{location.city}} {{location.zip_code}}, {{location.country}} <br> Phone: {{display_phone}}</p>
-        
         {{#if isUserGoing}}
-        <p><a href="/?id={{id}}&action=rm_user" class="btn btn-primary btn-block" role="button">{{nOfGoing}} Going</a></p>
+        <p><a href="?id={{id}}&action=rm_user" class="btn btn-danger btn-block" role="button">{{nOfGoing}} Going</a></p>
         {{^}}
-        <p><a href="/?id={{id}}" class="btn btn-primary btn-block" role="button">{{nOfGoing}} Going</a></p>
+          {{#if ../user}}
+            <p><a href="?id={{id}}" class="btn btn-primary btn-block" role="button">{{nOfGoing}} Going</a></p>
+          {{^}}
+            <p><a href="#" class="btn btn-warning btn-block" role="button">{{nOfGoing}} Going</a></p>
+          {{/if}}
         {{/if}}
 
 

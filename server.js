@@ -44,6 +44,7 @@ app.use(session({
     saveUninitialized: false
 }));
 
+
 axios.defaults.headers.common['Authorization'] = 'Bearer CKJIm1aKHYxpJLfIxo8TrXwOLyM2hvdiqzvDqqethjoAB-R17AqFO3CrHnmIGvzup864GershFcC2UMQ65ylLkXv1ke4dR_Nh34m87DWba46tTFXfWKxOzwG6kREWXYx';
 
 var twitter = new Twitter({
@@ -56,180 +57,261 @@ var _requestSecret;
 
 app.get('/', (req, res) => {
 
-    var user = false;
+    var user = false,
+        location_query;
 
-    // TO REMOVE A LOGGED IN USER FROM GOING TO A PLACE
-    if (req.query.id && req.session.user && req.query.action == "rm_user") {
-        var venueID = req.query.id,
-            userID = req.session.user.id;
+    function setLocation() {
+        return new Promise(function(resolve, reject) {
+            if (req.query.location) {
+                location_query = req.query.location;
 
-        Venue.findOne({
-            venue_id: venueID
-        })
+                if (req.session.user) {
+                    appUser.findOne({
+                            user_id: req.session.user.id
+                        })
+                        .then((user) => {
+                            if (user) {
+                                appUser.findOneAndUpdate({
+                                        user_id: req.session.user.id
+                                    }, {
+                                        $set: {
+                                            location: location_query
+                                        }
+                                    }, { new: true })
+                                    .then(() => resolve());
 
-        .then((venue) => {
-            if (venue)
-                return Venue.findOneAndUpdate({
-                    venue_id: venueID
-                }, {
-                    $pull: {
-                        going_ids: userID
-                    }
-                }, { new: true })
-        })
+                            } else {
+                                var user = new appUser({
+                                    user_id: req.session.user.id,
+                                    location: location_query
+                                });
 
-        .then((updatedVenue) => {
-            res.redirect('/');
-        })
-
-        .catch((e) => {
-            console.log(e);
-            res.redirect('/');
-        })
+                                user.save().then(() => resolve())
+                            }
+                        })
 
 
+                } else
+                    resolve();
+            }
+
+            // IF NO QUERY MADE
+            else {
+                if (req.session.user) {
+                    appUser.findOne({
+                            user_id: req.session.user.id
+                        })
+                        .then((user) => {
+                            if (user)
+                                location_query = user.location;
+
+                            resolve()
+                        });
+                } else
+                    resolve()
+            }
+        });
     }
 
-    // TO ADD A LOGGED IN USER TO A PLACE
-    else if (req.query.id && req.session.user) {
+    setLocation()
 
-        var venueID = req.query.id,
-            userID = req.session.user.id;
+    .then(() => {
 
-        Venue.findOne({
+        // TO REMOVE A LOGGED IN USER FROM GOING TO A PLACE
+        if (req.query.id && req.session.user && req.query.action == "rm_user") {
+            var venueID = req.query.id,
+                userID = req.session.user.id;
+
+            Venue.findOne({
                 venue_id: venueID
             })
+
             .then((venue) => {
                 if (venue)
                     return Venue.findOneAndUpdate({
                         venue_id: venueID
                     }, {
-                        $addToSet: {
+                        $pull: {
                             going_ids: userID
                         }
-                    }, { new: true });
+                    }, { new: true })
+            })
 
-                var venue = new Venue({
-                    venue_id: venueID,
-                    going_ids: [userID]
-                });
-                return venue.save();
+            .then((updatedVenue) => {
+                res.redirect('/');
+            })
+
+            .catch((e) => {
+                console.log(e);
+                res.redirect('/');
             })
 
 
-        .then((venue) => {
-            res.redirect('/');
-        })
+        }
 
-        .catch((e) => {
-            console.log(e);
-            res.redirect('/');
-        });
-    }
+        // TO ADD A LOGGED IN USER TO A PLACE
+        else if (req.query.id && req.session.user) {
 
-    // DEFAULT!!
-    else {
+            var venueID = req.query.id,
+                userID = req.session.user.id;
 
-        axios.get('https://api.yelp.com/v3/businesses/search?location=washington')
-            .then((response) => {
-                var venues = [];
-                response.data.businesses.forEach((venue) => {
-                    var newVenue = _.pick(venue, ['image_url', 'name', 'rating', 'location.address1', 'location.city', 'location.zip_code', 'location.country', 'display_phone', 'id']);
+            Venue.findOne({
+                    venue_id: venueID
+                })
+                .then((venue) => {
+                    if (venue)
+                        return Venue.findOneAndUpdate({
+                            venue_id: venueID
+                        }, {
+                            $addToSet: {
+                                going_ids: userID
+                            }
+                        }, { new: true });
 
-                    newVenue.nOfGoing = 0;
-                    newVenue.isUserGoing = false;
-                    venues.push(newVenue);
-                });
-
-                req.session.venues = venues;
-            })
-
-        .then(() => {
-            if (req.session.user) {
-                console.log("Entered here");
-
-                twitter.friends("ids", {
-                        cursor: -1,
-                        user_id: req.session.user.id
-                    },
-                    req.session.user.AT,
-                    req.session.user.AS,
-                    function(err, data, response) {
-                        if (err) {
-                            console.log("Error here: **", err);
-                            return Promise.reject(err);
-                        }
-                        req.session.ids = data.ids;
+                    var venue = new Venue({
+                        venue_id: venueID,
+                        going_ids: [userID]
                     });
+                    return venue.save();
+                })
 
-                return Venue.find();
-            }
 
-            // IF NOT LOGGED IN
-            else {
-                console.log("Done");
+            .then((venue) => {
+                res.redirect('/');
+            })
+
+            .catch((e) => {
+                console.log(e);
+                res.redirect('/');
+            });
+        }
+
+        // DEFAULT!!
+        else {
+            if (!location_query) {
+                console.log("ENDED HERE!")
+                if (req.session.user)
+                    user = req.session.user.screen_name;
                 res.render('home', {
                     title: "Home",
-                    venue: req.session.venues,
                     user
-                });
+                })
+            } else {
+                url_location_query = encodeURIComponent(location_query);
+
+                axios.get(`https://api.yelp.com/v3/businesses/search?location=${url_location_query}`)
+                    .then((response) => {
+                        var venues = [];
+                        response.data.businesses.forEach((venue) => {
+                            var newVenue = _.pick(venue, ['image_url', 'name', 'rating', 'location.address1', 'location.city', 'location.zip_code', 'location.country', 'display_phone', 'id']);
+
+                            newVenue.nOfGoing = 0;
+                            newVenue.isUserGoing = false;
+                            venues.push(newVenue);
+                        });
+
+                        req.session.venues = venues;
+
+                        if (req.session.user)
+                            return appUser.findOne({
+                                user_id: req.session.id
+                            })
+                        else
+                            return Promise.resolve();
+                    })
+
+                .then(() => {
+                    if (req.session.user) {
+                        // location_query = req.session.user.location;
+
+                        twitter.friends("ids", {
+                                cursor: -1,
+                                user_id: req.session.user.id
+                            },
+                            req.session.user.AT,
+                            req.session.user.AS,
+                            function(err, data, response) {
+                                if (err) {
+                                    console.log("Error here: **", err);
+                                    return Promise.reject(err);
+                                }
+                                var ids = data.ids;
+                                Venue.find()
+                                    .then((dbVenues) => {
+                                        if (dbVenues) {
+                                            req.session.venues.forEach((venue, index, array) => {
+                                                dbVenues.forEach((dbVenue) => {
+                                                    if (dbVenue.venue_id == venue.id)
+                                                        array[index].going_ids = dbVenue.going_ids;
+                                                    else
+                                                        array[index].going_ids = [];
+
+                                                    // console.log(venue.id)
+                                                });
+                                            });
+
+                                            req.session.venues.forEach((venue, index, array) => {
+                                                venue.going_ids.forEach((going_id) => {
+                                                    if (going_id == req.session.user.id) {
+                                                        array[index].isUserGoing = true;
+                                                        array[index].nOfGoing++;
+                                                    }
+                                                    // console.log(ids);
+                                                    ids.forEach((id) => {
+
+                                                        if (going_id == id)
+                                                            array[index].nOfGoing++;
+
+                                                    });
+
+                                                })
+                                            });
+
+                                            user = req.session.user.screen_name;
+
+                                            console.log("location", location_query)
+
+                                            return res.render('home', {
+                                                title: "Home",
+                                                venue: req.session.venues,
+                                                user,
+                                                user_location: location_query
+                                            });
+
+                                        } // END IF //
+                                    });
+                            });
+
+                    }
+
+                    // IF NOT LOGGED IN
+                    else {
+                        res.render('home', {
+                            title: "Home",
+                            venue: req.session.venues,
+                            user,
+                            user_location: location_query
+                        });
+                    }
+
+                })
+
+
+                .catch((e) => res.send({
+                    error: e,
+                    test: "Test message"
+                }));
             }
 
-        })
 
-        .then((dbVenues) => {
-            console.log(dbVenues);
+        }
+    })
 
-            if (dbVenues) {
-                console.log("Success");
+    .catch((e) => {
+        res.send(e);
+    })
 
-                console.log("BEFORE --- ", req.session.venues.length);
 
-                req.session.venues.forEach((venue, index, array) => {
-                    console.log("Succeeding! - 1");
-                    dbVenues.forEach((dbVenue) => {
-                        if (dbVenue.venue_id == venue.id)
-                            array[index].going_ids = dbVenue.going_ids;
-                    });
-                });
-
-                console.log("AFTER --- ", req.session.venues.length);
-                console.log(req.session.ids);
-
-                req.session.venues.forEach((venue, index, array) => {
-                    console.log("Succeeding! - 2");
-                    req.session.ids.forEach((id) => {
-                        venue.going_ids.forEach((going_id) => {
-
-                            if (going_id == req.session.user.id)
-                                array[index].isUserGoing = true;
-                            else if (going_id == id)
-                                array[index].nOfGoing++;
-
-                        });
-                    });
-                });
-
-                console.log(req.session.venues);
-
-                console.log("Before rendering");
-
-                user = req.session.user.screen_name;
-
-                return res.render('home', {
-                    title: "Home",
-                    venue: req.session.venues,
-                    user
-                });
-
-            } // END IF //
-        })
-
-        .catch((e) => res.send({
-            error: e,
-            test: "Test message"
-        }));
-    }
 
 });
 

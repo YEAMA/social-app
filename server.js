@@ -146,6 +146,8 @@ app.get('/', (req, res) => {
 
         .then(() => {
             if (req.session.user) {
+                console.log("Entered here");
+
                 twitter.friends("ids", {
                         cursor: -1,
                         user_id: req.session.user.id
@@ -153,8 +155,10 @@ app.get('/', (req, res) => {
                     req.session.user.AT,
                     req.session.user.AS,
                     function(err, data, response) {
-                        if (err)
+                        if (err) {
+                            console.log("Error here: **", err);
                             return Promise.reject(err);
+                        }
                         req.session.ids = data.ids;
                     });
 
@@ -163,6 +167,7 @@ app.get('/', (req, res) => {
 
             // IF NOT LOGGED IN
             else {
+                console.log("Done");
                 res.render('home', {
                     title: "Home",
                     venue: req.session.venues,
@@ -173,6 +178,8 @@ app.get('/', (req, res) => {
         })
 
         .then((dbVenues) => {
+            console.log(dbVenues);
+
             if (dbVenues) {
                 req.session.venues.forEach((venue, index, array) => {
                     dbVenues.forEach((dbVenue) => {

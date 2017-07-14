@@ -201,7 +201,7 @@ app.get('/', (req, res) => {
                     });
                 });
 
-                res.render('home', {
+                return res.render('home', {
                     title: "Home",
                     venue: req.session.venues,
                     user

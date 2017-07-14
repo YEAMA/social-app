@@ -203,7 +203,10 @@ app.get('/', (req, res) => {
             } // END IF //
         })
 
-        .catch((e) => res.send(e));
+        .catch((e) => res.send({
+            error: e,
+            test: "Test message"
+        }));
     }
 
 });

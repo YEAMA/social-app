@@ -55,86 +55,43 @@ var twitter = new Twitter({
 var _requestSecret;
 
 app.get('/', (req, res) => {
-    axios.get('https://api.yelp.com/v3/businesses/search?location=washington')
-        .then((response) => {
-            var venues = [];
-            response.data.businesses.forEach((venue) => {
-                venues.push(_.pick(venue, ['image_url', 'name', 'rating', 'location.address1', 'location.city', 'location.zip_code', 'location.country', 'display_phone', 'id']));
-            });
-            req.session.venues = venues;
 
-            console.log("Entered 0")
-            if (req.session.user) {
-                console.log("Entered 1")
-                twitter.friends("ids", {
-                        cursor: -1,
-                        user_id: req.session.user.id
-                    },
-                    req.session.user.AT,
-                    req.session.user.AS,
-                    function(err, data, response) {
-                        if (err)
-                            return Promise.reject(err);
+    var user = false;
 
-                        var ids = data.ids;
-                        req.session.ids = ids;
+    // TO REMOVE A LOGGED IN USER FROM GOING TO A PLACE
+    if (req.query.id && req.session.user && req.query.action == "rm_user") {
+        var venueID = req.query.id,
+            userID = req.session.user.id;
 
-
-                    });
-
-                return Venue.find();
-            }
-
+        Venue.findOne({
+            venue_id: venueID
         })
 
-    .then((venues) => {
-        if (venues) {
-            console.log("Entered 2")
-            console.log(req.session)
+        .then((venue) => {
+            if (venue)
+                return Venue.findOneAndUpdate({
+                    venue_id: venueID
+                }, {
+                    $pull: {
+                        going_ids: userID
+                    }
+                }, { new: true })
+        })
 
-            req.session.venues.forEach((venue, index, array) => {
-                venues.forEach((dbVenue) => {
-                    if (dbVenue.venue_id == venue.id)
-                        array[index].going_ids = dbVenue.going_ids;
-                });
-            });
+        .then((updatedVenue) => {
+            res.redirect('/');
+        })
 
-            req.session.venues.forEach((venue, index, array) => {
-                array[index].nOfGoing = 0;
-                array[index].isUserGoing = false;
+        .catch((e) => {
+            console.log(e);
+            res.redirect('/');
+        })
 
-                req.session.ids.forEach((id) => {
-                    venue.going_ids.forEach((going_id) => {
 
-                        if (going_id == req.session.user.id)
-                            array[index].isUserGoing = true;
-                        else if (going_id == id)
-                            array[index].nOfGoing++;
+    }
 
-                    });
-                });
-
-                console.log(venue.nOfGoing);
-                console.log(venue.isUserGoing);
-            });
-
-        } // END if(venues)
-
-        var user = false;
-        if (req.session.user)
-            user = req.session.user.screen_name;
-
-        res.render('home', {
-            title: "Home",
-            venue: req.session.venues,
-            user
-        });
-
-    })
-
-    .catch((e) => console.log(e));
-
-    if (req.query.id && req.session.user) {
+    // TO ADD A LOGGED IN USER TO A PLACE
+    else if (req.query.id && req.session.user) {
 
         var venueID = req.query.id,
             userID = req.session.user.id;
@@ -161,7 +118,6 @@ app.get('/', (req, res) => {
 
 
         .then((venue) => {
-            console.log("here1 after success ######")
             res.redirect('/');
         })
 
@@ -169,6 +125,85 @@ app.get('/', (req, res) => {
             console.log(e);
             res.redirect('/');
         });
+    }
+
+    // DEFAULT!!
+    else {
+
+        axios.get('https://api.yelp.com/v3/businesses/search?location=washington')
+            .then((response) => {
+                var venues = [];
+                response.data.businesses.forEach((venue) => {
+                    var newVenue = _.pick(venue, ['image_url', 'name', 'rating', 'location.address1', 'location.city', 'location.zip_code', 'location.country', 'display_phone', 'id']);
+
+                    newVenue.nOfGoing = 0;
+                    newVenue.isUserGoing = false;
+                    venues.push(newVenue);
+                });
+
+                req.session.venues = venues;
+            })
+
+        .then(() => {
+            if (req.session.user) {
+                twitter.friends("ids", {
+                        cursor: -1,
+                        user_id: req.session.user.id
+                    },
+                    req.session.user.AT,
+                    req.session.user.AS,
+                    function(err, data, response) {
+                        if (err)
+                            return Promise.reject(err);
+                        req.session.ids = data.ids;
+                    });
+
+                return Venue.find();
+            }
+
+            // IF NOT LOGGED IN
+            else {
+                res.render('home', {
+                    title: "Home",
+                    venue: req.session.venues,
+                    user
+                });
+            }
+
+        })
+
+        .then((dbVenues) => {
+            if (dbVenues) {
+                req.session.venues.forEach((venue, index, array) => {
+                    dbVenues.forEach((dbVenue) => {
+                        if (dbVenue.venue_id == venue.id)
+                            array[index].going_ids = dbVenue.going_ids;
+                    });
+                });
+
+                req.session.venues.forEach((venue, index, array) => {
+                    req.session.ids.forEach((id) => {
+                        venue.going_ids.forEach((going_id) => {
+
+                            if (going_id == req.session.user.id)
+                                array[index].isUserGoing = true;
+                            else if (going_id == id)
+                                array[index].nOfGoing++;
+
+                        });
+                    });
+                });
+
+                res.render('home', {
+                    title: "Home",
+                    venue: req.session.venues,
+                    user
+                });
+
+            } // END IF //
+        })
+
+        .catch((e) => res.send(e));
     }
 
 });

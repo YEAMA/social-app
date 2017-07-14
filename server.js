@@ -181,7 +181,10 @@ app.get('/', (req, res) => {
             console.log(dbVenues);
 
             if (dbVenues) {
+                console.log("Success");
+
                 req.session.venues.forEach((venue, index, array) => {
+                    console.log("Succeeding! - 1");
                     dbVenues.forEach((dbVenue) => {
                         if (dbVenue.venue_id == venue.id)
                             array[index].going_ids = dbVenue.going_ids;
@@ -189,6 +192,7 @@ app.get('/', (req, res) => {
                 });
 
                 req.session.venues.forEach((venue, index, array) => {
+                    console.log("Succeeding! - 2");
                     req.session.ids.forEach((id) => {
                         venue.going_ids.forEach((going_id) => {
 
@@ -200,6 +204,10 @@ app.get('/', (req, res) => {
                         });
                     });
                 });
+
+                console.log("Before rendering");
+
+                user = req.session.user.screen_name;
 
                 return res.render('home', {
                     title: "Home",

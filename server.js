@@ -183,6 +183,8 @@ app.get('/', (req, res) => {
             if (dbVenues) {
                 console.log("Success");
 
+                console.log("BEFORE --- ", req.session.venues.length);
+
                 req.session.venues.forEach((venue, index, array) => {
                     console.log("Succeeding! - 1");
                     dbVenues.forEach((dbVenue) => {
@@ -190,6 +192,9 @@ app.get('/', (req, res) => {
                             array[index].going_ids = dbVenue.going_ids;
                     });
                 });
+
+                console.log("AFTER --- ", req.session.venues.length);
+                console.log(req.session.ids);
 
                 req.session.venues.forEach((venue, index, array) => {
                     console.log("Succeeding! - 2");
@@ -204,6 +209,8 @@ app.get('/', (req, res) => {
                         });
                     });
                 });
+
+                console.log(req.session.venues);
 
                 console.log("Before rendering");
 
